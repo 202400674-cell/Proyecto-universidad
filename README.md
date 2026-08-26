@@ -2,12 +2,10 @@
 > Proyecto Integrador - Fase II: Diseño
 
 ## Equipo Scrum
-* **Product Owner:** [Nombre de tu compañero]
-* **Scrum Master:** [Tu Nombre]
+* **Scrum Master:** Andrea Yamilette Aguilera Recinos
 * **Development Team:** 
-  * [Nombre Integrante 1]
-  * [Nombre Integrante 2]
-  * [Nombre Integrante 3]
+  * Fatima Esmeralda Calderon Rivas
+  * Otto Alexander Hernandez Arevalo
 
 ## Asignaturas Integradas
 * Metodologías de Desarrollo de Software 0 (MDS 0)
