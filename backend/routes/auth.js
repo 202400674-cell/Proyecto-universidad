@@ -9,7 +9,7 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate('roles');
     if (!user) {
       return res.status(401).json({ mensaje: 'Credenciales inválidas' });
     }
@@ -19,7 +19,9 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ mensaje: 'Credenciales inválidas' });
     }
 
-    const payload = { id: user._id, email: user.email, rol: user.rol };
+    const nombresRoles = user.roles.map(r => r.nombre);
+
+    const payload = { id: user._id, email: user.email, roles: nombresRoles };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
 
     res.json({ token });
