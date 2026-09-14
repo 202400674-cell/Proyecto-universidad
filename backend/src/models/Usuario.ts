@@ -1,11 +1,14 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 // 1. Interfaz para definir la estructura del documento en TypeScript
 export interface IUsuario extends Document {
+  nombres: string;
+  apellidosCompleto: string;
   email: string;
   password: string;
-  rol: 'administrador' | 'coordinador' | 'operador';
+  roles: Types.ObjectId[];
+  estado: 'activo' | 'inactivo';
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -13,6 +16,16 @@ export interface IUsuario extends Document {
 // 2. Definición del Esquema
 const usuarioSchema = new Schema<IUsuario>(
   {
+    nombres: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    apellidosCompleto: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     email: {
       type: String,
       required: true,
@@ -24,10 +37,16 @@ const usuarioSchema = new Schema<IUsuario>(
       type: String,
       required: true,
     },
-    rol: {
+    roles: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Role',
+      required: true,
+    }],
+    estado: {
       type: String,
-      enum: ['administrador', 'coordinador', 'operador'],
-      default: 'operador',
+      enum: ['activo', 'inactivo'],
+      default: 'activo',
+      required: true,
     },
   },
   { timestamps: true }

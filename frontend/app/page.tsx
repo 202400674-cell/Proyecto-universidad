@@ -11,6 +11,12 @@ interface DecodedToken {
   exp: number;
 }
 
+const roleDestinations: Record<DecodedToken['rol'], string> = {
+  administrador: '/dashboard/administrador',
+  coordinador: '/dashboard/coordinador',
+  operador: '/dashboard/operador',
+};
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,39 +45,54 @@ export default function LoginPage() {
         throw new Error(data.mensaje || 'Error al iniciar sesión');
       }
 
-      // 1. Guardar el token JWT en localStorage
-      localStorage.setItem('token', data.token);
-
-      // 2. Decodificar el token para extraer el rol del usuario (RBAC)
+      // Decodificar y validar el JWT antes de persistir la sesión.
       const decoded: DecodedToken = jwtDecode(data.token);
+      if (!Object.hasOwn(roleDestinations, decoded.rol)) {
+        throw new Error('El rol recibido no es válido');
+      }
+
+      localStorage.setItem('token', data.token);
       localStorage.setItem('rol', decoded.rol);
 
-      // 3. Redirección dinámica basada en el Rol
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+      // Redirección dinámica basada en el rol validado dentro del JWT.
+      router.replace(roleDestinations[decoded.rol]);
+    } catch (err: unknown) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('rol');
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
-      <div className="card shadow-lg p-4" style={{ width: '100%', maxWidth: '400px' }}>
-        <div className="card-body">
-          <h3 className="card-title text-center mb-4 text-primary fw-bold">
-            Iniciar Sesión
-          </h3>
+    <main className="login-shell">
+      <section className="login-intro">
+        <div className="login-brand">
+          <span>Centro de distribución</span>
+        </div>
+        <div className="login-copy">
+          <h1>Sistema de Gestión Logística</h1>
+          <p className="login-lead">
+            Recepción y desembarque de proveedores en un solo lugar.
+          </p>
+        </div>
+      </section>
+
+      <section className="login-panel" aria-labelledby="login-title">
+        <div className="login-form-wrap">
+          <p className="login-panel-label">Acceso al sistema</p>
+          <h2 id="login-title">Iniciar Sesión</h2>
 
           {error && (
-            <div className="alert alert-danger text-center p-2" role="alert">
+            <div className="alert alert-danger py-2" role="alert">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
-              <label htmlFor="emailInput" className="form-label font-weight-bold">
+              <label htmlFor="emailInput" className="form-label">
                 Correo Electrónico
               </label>
               <input
@@ -102,14 +123,14 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="btn btn-primary w-100 mt-3"
+              className="btn btn-primary w-100 login-submit"
               disabled={loading}
             >
               {loading ? 'Ingresando...' : 'Iniciar Sesión'}
             </button>
           </form>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

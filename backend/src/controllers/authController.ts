@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Usuario } from '../models/Usuario.js';
+import { Role, type IRole, type RoleName } from '../models/Role.js';
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -14,7 +15,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     // 2. Buscar usuario en MongoDB
-    const usuario = await Usuario.findOne({ email });
+    const usuario = await Usuario.findOne({ email, estado: 'activo' })
+      .populate<{ roles: IRole[] }>({ path: 'roles', model: Role });
     if (!usuario) {
       res.status(401).json({ mensaje: 'Credenciales inválidas' });
       return;
@@ -27,10 +29,22 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const rolesPermitidos: RoleName[] = ['administrador', 'coordinador', 'operador'];
+    const rol = usuario.roles.find((role) => rolesPermitidos.includes(role.nombre));
+    if (!rol) {
+      res.status(403).json({ mensaje: 'El rol del usuario no es válido' });
+      return;
+    }
+
     // 4. Firmar Token JWT con expiración de 24 horas y ROL (RBAC)
-    const secretKey = process.env.JWT_SECRET || 'secreto_por_defecto';
+    const secretKey = process.env.JWT_SECRET;
+    if (!secretKey) {
+      res.status(500).json({ mensaje: 'JWT_SECRET no está configurado' });
+      return;
+    }
+
     const token = jwt.sign(
-      { id: usuario._id, email: usuario.email, rol: usuario.rol },
+      { id: usuario._id, email: usuario.email, rol: rol.nombre },
       secretKey,
       { expiresIn: '24h' } // Expiración exacta a 24 horas
     );
@@ -42,7 +56,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       usuario: {
         id: usuario._id,
         email: usuario.email,
-        rol: usuario.rol
+        rol: rol.nombre
       }
     });
   } catch (error) {
