@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import authRoutes from './routes/authRoutes.js';
+import proveedoresRoutes from './routes/proveedores.js';
+import pedidosRoutes from './routes/pedidos.js';
 
 dotenv.config();
 
@@ -21,6 +23,8 @@ mongoose
 
 // 2. Registrar las rutas
 app.use('/api/auth', authRoutes);
+app.use('/api/proveedores', proveedoresRoutes);
+app.use('/api/pedidos', pedidosRoutes);
 
 app.listen(PORT, () => {
   console.log(`Servidor backend corriendo en el puerto ${PORT}`);

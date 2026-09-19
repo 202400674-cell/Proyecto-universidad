@@ -64,9 +64,10 @@ const handleBackNavigation = (router: ReturnType<typeof useRouter>) => {
 
 interface RoleDashboardProps {
   expectedRole?: Role;
+  children?: React.ReactNode;
 }
 
-export default function RoleDashboard({ expectedRole }: RoleDashboardProps) {
+export default function RoleDashboard({ expectedRole, children }: RoleDashboardProps) {
   const rol = useSyncExternalStore(subscribeToSession, readRoleFromToken, () => null);
   const router = useRouter();
 
@@ -122,7 +123,7 @@ export default function RoleDashboard({ expectedRole }: RoleDashboardProps) {
         </div>
       </header>
 
-      <main className="container min-vh-100" />
+      <main className="container min-vh-100 py-4">{children}</main>
     </div>
   );
 }
